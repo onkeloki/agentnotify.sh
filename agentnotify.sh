@@ -93,11 +93,14 @@ else
     echo ""
 fi
 
-NOTIFY_COMMAND="${NOTIFY_COMMAND:-echo \"[agentnotify] Done: {TODO}\"}"
-NEW_TASK_COMMAND="${NEW_TASK_COMMAND:-}"
 POLL_INTERVAL="${POLL_INTERVAL:-2}"
 OPEN_MARKER="${OPEN_MARKER:-[ ]}"
 DONE_MARKER="${DONE_MARKER:-[x]}"
+# Use if-blocks for defaults containing {TODO} to avoid bash brace-expansion
+# mis-parsing the } in {TODO} as the closing } of ${:-...}
+if [[ -z "$NOTIFY_COMMAND" ]]; then
+    NOTIFY_COMMAND='echo "[agentnotify] Done: {TODO}"'
+fi
 
 # --------------------------------------------------------------------------- #
 #  Task extraction (fixed-string matching, no regex)                          #
