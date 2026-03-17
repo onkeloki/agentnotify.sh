@@ -1,0 +1,39 @@
+# =============================================================================
+# .agentnotify.conf – Configuration for agentnotify.sh
+# =============================================================================
+# Copy this file as .agentnotify.conf into the same directory as your Todo.md
+# (or pass the path explicitly as the second argument on startup).
+#
+# {TODO} is replaced at runtime with the text of the completed checkbox.
+# =============================================================================
+
+# Polling interval in seconds (default: 2)
+POLL_INTERVAL=2
+
+# -----------------------------------------------------------------------------
+# Example commands – uncomment exactly ONE NOTIFY_COMMAND
+# -----------------------------------------------------------------------------
+
+# macOS system notification
+NOTIFY_COMMAND='osascript -e "display notification \"{TODO}\" with title \"✓ Todo done\" subtitle \"agentnotify\""'
+
+# Append to a log file
+# NOTIFY_COMMAND='echo "$(date +"%Y-%m-%d %H:%M:%S") - Done: {TODO}" >> ~/todo-done.log'
+
+# macOS text-to-speech
+# NOTIFY_COMMAND='say "Done: {TODO}"'
+
+# Push notification via ntfy.sh
+# NOTIFY_COMMAND='curl -s -d "{TODO}" ntfy.sh/my-channel'
+
+# Slack message via webhook
+# NOTIFY_COMMAND='curl -s -X POST -H "Content-type: application/json" --data "{\"text\":\"✓ Done: {TODO}\"}" https://hooks.slack.com/services/YOUR/WEBHOOK/URL'
+
+# Git commit in the repo containing Todo.md
+# NOTIFY_COMMAND='cd "$(dirname "$TODO_FILE")" && git add Todo.md && git commit -m "done: {TODO}"'
+
+# Call a custom script (task text as argument)
+# NOTIFY_COMMAND='/usr/local/bin/my-handler.sh "{TODO}"'
+
+# Chain multiple actions (log + notification)
+# NOTIFY_COMMAND='echo "$(date): {TODO}" >> ~/done.log && osascript -e "display notification \"{TODO}\" with title \"✓ Done\""'
