@@ -13,12 +13,11 @@
 #   agentnotify.sh ~/projects/myrepo/Todo.md
 #   agentnotify.sh ~/projects/myrepo/Todo.md ~/my.conf
 #
-# Supported checkbox formats:
-#   - [ ] Open task
-#   * [ ] Open task
-#     [ ] Indented open task
-#   - [x] Completed task
-#   - [X] Completed task (uppercase X also works)
+# The open and done marker patterns are configurable via OPEN_PATTERN / DONE_PATTERN
+# in the config file (extended regex, matched with grep -E).
+# Defaults:
+#   OPEN_PATTERN='\[ \]'   matches: - [ ] Task
+#   DONE_PATTERN='\[xX\]'  matches: - [x] Task  or  - [X] Task
 # =============================================================================
 
 # --------------------------------------------------------------------------- #
@@ -37,11 +36,17 @@ Usage: agentnotify.sh <todo_file> [config_file]
 Configuration variables (set in the config file):
   NOTIFY_COMMAND   Shell command to run when a task is completed. {TODO} is
                    replaced with the task text.
+  NEW_TASK_COMMAND Shell command to run when a new task is added. {TODO} is
+                   replaced with the task text. (optional)
   POLL_INTERVAL    Polling interval in seconds (default: 2)
+  OPEN_PATTERN     Extended regex matching the open-task marker (default: \\[ \\])
+  DONE_PATTERN     Extended regex matching the done-task marker (default: \\[xX\\])
 
 Example config (.agentnotify.conf):
   NOTIFY_COMMAND='osascript -e "display notification \"{TODO}\" with title \"Done\""'
   POLL_INTERVAL=2
+  OPEN_PATTERN='\[ \]'
+  DONE_PATTERN='\[xX\]'
 
 USAGE
     exit 1
@@ -89,28 +94,29 @@ else
 fi
 
 NOTIFY_COMMAND="${NOTIFY_COMMAND:-echo \"[agentnotify] Done: {TODO}\"}"
+NEW_TASK_COMMAND="${NEW_TASK_COMMAND:-}"
 POLL_INTERVAL="${POLL_INTERVAL:-2}"
+OPEN_PATTERN="${OPEN_PATTERN:-\\[ \\]}"
+DONE_PATTERN="${DONE_PATTERN:-\\[xX\\]}"
 
 # --------------------------------------------------------------------------- #
 #  Task extraction (BSD grep & sed compatible, no grep -P required)           #
 # --------------------------------------------------------------------------- #
 
-# Extracts the plain text of all open todos ([ ])
+# Extracts the plain text of all open todos
 # Returns one task per line, sorted alphabetically
 get_open_tasks() {
-    grep -E '\[ \]' "$TODO_FILE" 2>/dev/null \
-        | sed 's/.*\[ \] //' \
+    grep -E "$OPEN_PATTERN" "$TODO_FILE" 2>/dev/null \
+        | sed 's/^.*\] //' \
         | sed 's/[[:space:]]*$//' \
         | sort \
         || true
 }
 
-# Extracts the plain text of all completed todos ([x] or [X])
+# Extracts the plain text of all completed todos
 get_done_tasks() {
-    {
-        grep -E '\[x\]' "$TODO_FILE" 2>/dev/null | sed 's/.*\[x\] //'
-        grep -E '\[X\]' "$TODO_FILE" 2>/dev/null | sed 's/.*\[X\] //'
-    } \
+    grep -E "$DONE_PATTERN" "$TODO_FILE" 2>/dev/null \
+        | sed 's/^.*\] //' \
         | sed 's/[[:space:]]*$//' \
         | sort \
         || true
@@ -170,11 +176,14 @@ echo ""
 echo "=================================================="
 echo "  agentnotify – Todo Watcher"
 echo "=================================================="
-log "File:     $TODO_FILE"
-log "Config:   $CONFIG_FILE"
-log "Command:  $NOTIFY_COMMAND"
-log "Interval: ${POLL_INTERVAL}s"
-log "Open todos: $OPEN_COUNT"
+log "File:          $TODO_FILE"
+log "Config:        $CONFIG_FILE"
+log "Done command:  $NOTIFY_COMMAND"
+log "New command:   ${NEW_TASK_COMMAND:-(not set)}"
+log "Open pattern:  $OPEN_PATTERN"
+log "Done pattern:  $DONE_PATTERN"
+log "Interval:      ${POLL_INTERVAL}s"
+log "Open todos:    $OPEN_COUNT"
 echo "--------------------------------------------------"
 echo ""
 
@@ -217,10 +226,17 @@ while true; do
         fi
     done < "$NEWLY_DONE"
 
-    # Log newly added todos
+    # Newly added todos
     while IFS= read -r task; do
         [[ -z "$task" ]] && continue
         log "+ New todo: $task"
+        if [[ -n "$NEW_TASK_COMMAND" ]]; then
+            local_cmd="${NEW_TASK_COMMAND//\{TODO\}/$task}"
+            log "  → Running: $local_cmd"
+            bash -c "$local_cmd"
+            local exit_code=$?
+            [[ $exit_code -ne 0 ]] && log_err "Command exited with code $exit_code: $local_cmd"
+        fi
         echo ""
     done < "$NEWLY_ADDED"
 

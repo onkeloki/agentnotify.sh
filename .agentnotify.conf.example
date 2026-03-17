@@ -10,9 +10,29 @@
 # Polling interval in seconds (default: 2)
 POLL_INTERVAL=2
 
-# -----------------------------------------------------------------------------
-# Example commands – uncomment exactly ONE NOTIFY_COMMAND
-# -----------------------------------------------------------------------------
+# =============================================================================
+# Marker patterns (extended regex, matched with grep -E)
+# =============================================================================
+
+# Pattern that identifies an OPEN (pending) task (default: \[ \])
+# Examples:
+#   OPEN_PATTERN='\[ \]'      standard Markdown checkbox
+#   OPEN_PATTERN='\[>\]'      custom "in progress" marker
+OPEN_PATTERN='\[ \]'
+
+# Pattern that identifies a DONE (completed) task (default: \[xX\])
+# Examples:
+#   DONE_PATTERN='\[xX\]'     matches [x] and [X]
+#   DONE_PATTERN='\[x\]'      lowercase only
+#   DONE_PATTERN='\[DONE\]'   custom marker
+DONE_PATTERN='\[xX\]'
+
+# =============================================================================
+# Commands
+# =============================================================================
+
+# Command to run when a task is marked done. {TODO} = task text.
+# Uncomment exactly ONE NOTIFY_COMMAND.
 
 # macOS system notification
 NOTIFY_COMMAND='osascript -e "display notification \"{TODO}\" with title \"✓ Todo done\" subtitle \"agentnotify\""'
@@ -37,3 +57,11 @@ NOTIFY_COMMAND='osascript -e "display notification \"{TODO}\" with title \"✓ T
 
 # Chain multiple actions (log + notification)
 # NOTIFY_COMMAND='echo "$(date): {TODO}" >> ~/done.log && osascript -e "display notification \"{TODO}\" with title \"✓ Done\""'
+
+# -----------------------------------------------------------------------------
+# Command to run when a NEW task is added. {TODO} = task text. (optional)
+# Leave unset to only log the event without running a command.
+# -----------------------------------------------------------------------------
+
+# NEW_TASK_COMMAND='osascript -e "display notification \"{TODO}\" with title \"📋 New todo\""'
+# NEW_TASK_COMMAND='echo "$(date): NEW: {TODO}" >> ~/todo.log'
