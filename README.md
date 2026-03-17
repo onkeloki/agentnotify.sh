@@ -1,6 +1,6 @@
 # agentnotify – Todo.md Completion Watcher
 
-Polls a Markdown file for checkbox changes. Whenever an AI agent (or any other process) flips a checkbox from `[ ]` to `[x]`, a configurable shell command is executed. The completed task text is injected into the command via a `{TODO}` placeholder. New tasks being added are detected and can trigger a separate command.
+Polls a Markdown file for checkbox changes. Whenever an AI agent (or any other process) flips a checkbox from `[ ]` to `[x]`, a configurable shell command is executed. The completed task text is injected into the command via a `{TODO}` placeholder. New tasks being added are detected and can trigger a separate command. All markers are plain strings – no regex needed.
 
 ## Requirements
 
@@ -36,8 +36,8 @@ cp .agentnotify.conf.example /path/to/my/repo/.agentnotify.conf
 | `NOTIFY_COMMAND` | `echo "[agentnotify] Done: {TODO}"` | Command to run when a task is completed |
 | `NEW_TASK_COMMAND` | *(empty)* | Command to run when a new task is added (optional) |
 | `POLL_INTERVAL` | `2` | Polling interval in seconds |
-| `OPEN_PATTERN` | `\[ \]` | Extended regex matching the **open** task marker |
-| `DONE_PATTERN` | `\[[xX]\]` | Extended regex matching the **done** task marker |
+| `OPEN_MARKER` | `[ ]` | Plain string identifying an **open** task line |
+| `DONE_MARKER` | `[x]` | Plain string identifying a **done** task line |
 
 `{TODO}` is replaced at runtime with the task text in both `NOTIFY_COMMAND` and `NEW_TASK_COMMAND`.
 
@@ -53,14 +53,14 @@ NOTIFY_COMMAND='osascript -e "display notification \"{TODO}\" with title \"\u271
 NEW_TASK_COMMAND='osascript -e "display notification \"{TODO}\" with title \"\U0001f4cb New todo\""'
 ```
 
-### Custom marker patterns
+### Custom markers
 
-If your AI agent uses different markers, override the patterns:
+If your AI agent uses different markers, just set the plain strings:
 
 ```bash
 # Agent writes [>] for open and [DONE] for completed
-OPEN_PATTERN='\[>\]'
-DONE_PATTERN='\[DONE\]'
+OPEN_MARKER='[>]'
+DONE_MARKER='[DONE]'
 ```
 
 ## Usage
@@ -77,18 +77,17 @@ Press `Ctrl+C` to stop the watcher cleanly.
 
 ## Supported checkbox formats
 
-The default patterns match standard Markdown task lists:
+The default markers match standard Markdown task lists:
 
 ```markdown
 - [ ] Open task
 * [ ] Open task
   - [ ] Indented open task
 - [x] Completed task  ← fires NOTIFY_COMMAND
-- [X] Completed task  ← fires NOTIFY_COMMAND (uppercase X also works)
 ```
 
 Any newly added `[ ]` line fires `NEW_TASK_COMMAND` (if configured).
-These patterns are fully configurable via `OPEN_PATTERN` and `DONE_PATTERN`.
+Markers are plain strings configured via `OPEN_MARKER` and `DONE_MARKER`.
 
 ## Example workflow
 
@@ -106,6 +105,8 @@ These patterns are fully configurable via `OPEN_PATTERN` and `DONE_PATTERN`.
 POLL_INTERVAL=2
 NOTIFY_COMMAND='osascript -e "display notification \"{TODO}\" with title \"Agent done\""'
 NEW_TASK_COMMAND='echo "$(date): NEW: {TODO}" >> ~/todo.log'
+OPEN_MARKER='[ ]'
+DONE_MARKER='[x]'
 ```
 
 **3. Start the watcher:**
@@ -119,8 +120,8 @@ $ agentnotify.sh ~/projects/myrepo/Todo.md
 [14:32:01] Config:        /home/user/projects/myrepo/.agentnotify.conf
 [14:32:01] Done command:  osascript -e "display notification ..."
 [14:32:01] New command:   echo "$(date): NEW: {TODO}" >> ~/todo.log
-[14:32:01] Open pattern:  \[ \]
-[14:32:01] Done pattern:  \[xX\]
+[14:32:01] Open marker:   [ ]
+[14:32:01] Done marker:   [x]
 [14:32:01] Interval:      2s
 [14:32:01] Open todos:    3
 --------------------------------------------------

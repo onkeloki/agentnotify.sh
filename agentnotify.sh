@@ -13,11 +13,11 @@
 #   agentnotify.sh ~/projects/myrepo/Todo.md
 #   agentnotify.sh ~/projects/myrepo/Todo.md ~/my.conf
 #
-# The open and done marker patterns are configurable via OPEN_PATTERN / DONE_PATTERN
-# in the config file (extended regex, matched with grep -E).
+# The open and done markers are plain strings configured via OPEN_MARKER / DONE_MARKER
+# in the config file (matched with grep -F, no regex).
 # Defaults:
-#   OPEN_PATTERN='\[ \]'      matches: - [ ] Task
-#   DONE_PATTERN='\[[xX]\]'  matches: - [x] Task  or  - [X] Task
+#   OPEN_MARKER='[ ]'   matches lines containing: - [ ] Task
+#   DONE_MARKER='[x]'   matches lines containing: - [x] Task
 # =============================================================================
 
 # --------------------------------------------------------------------------- #
@@ -39,14 +39,14 @@ Configuration variables (set in the config file):
   NEW_TASK_COMMAND Shell command to run when a new task is added. {TODO} is
                    replaced with the task text. (optional)
   POLL_INTERVAL    Polling interval in seconds (default: 2)
-  OPEN_PATTERN     Extended regex matching the open-task marker (default: \\[ \\])
-  DONE_PATTERN     Extended regex matching the done-task marker (default: \\[xX\\])
+  OPEN_MARKER      Plain string marking an open task (default: [ ])
+  DONE_MARKER      Plain string marking a completed task (default: [x])
 
 Example config (.agentnotify.conf):
   NOTIFY_COMMAND='osascript -e "display notification \"{TODO}\" with title \"Done\""'
   POLL_INTERVAL=2
-  OPEN_PATTERN='\[ \]'
-  DONE_PATTERN='\[xX\]'
+  OPEN_MARKER='[ ]'
+  DONE_MARKER='[x]'
 
 USAGE
     exit 1
@@ -96,18 +96,20 @@ fi
 NOTIFY_COMMAND="${NOTIFY_COMMAND:-echo \"[agentnotify] Done: {TODO}\"}"
 NEW_TASK_COMMAND="${NEW_TASK_COMMAND:-}"
 POLL_INTERVAL="${POLL_INTERVAL:-2}"
-OPEN_PATTERN="${OPEN_PATTERN:-\\[ \\]}"
-DONE_PATTERN="${DONE_PATTERN:-\\[[xX]\\]}"
+OPEN_MARKER="${OPEN_MARKER:-[ ]}"
+DONE_MARKER="${DONE_MARKER:-[x]}"
 
 # --------------------------------------------------------------------------- #
-#  Task extraction (BSD grep & sed compatible, no grep -P required)           #
+#  Task extraction (fixed-string matching, no regex)                          #
 # --------------------------------------------------------------------------- #
 
 # Extracts the plain text of all open todos
 # Returns one task per line, sorted alphabetically
 get_open_tasks() {
-    grep -E "$OPEN_PATTERN" "$TODO_FILE" 2>/dev/null \
-        | sed 's/^.*\] //' \
+    grep -F "$OPEN_MARKER" "$TODO_FILE" 2>/dev/null \
+        | while IFS= read -r line; do
+            echo "${line##*"$OPEN_MARKER "}"
+          done \
         | sed 's/[[:space:]]*$//' \
         | sort \
         || true
@@ -115,8 +117,10 @@ get_open_tasks() {
 
 # Extracts the plain text of all completed todos
 get_done_tasks() {
-    grep -E "$DONE_PATTERN" "$TODO_FILE" 2>/dev/null \
-        | sed 's/^.*\] //' \
+    grep -F "$DONE_MARKER" "$TODO_FILE" 2>/dev/null \
+        | while IFS= read -r line; do
+            echo "${line##*"$DONE_MARKER "}"
+          done \
         | sed 's/[[:space:]]*$//' \
         | sort \
         || true
@@ -180,8 +184,8 @@ log "File:          $TODO_FILE"
 log "Config:        $CONFIG_FILE"
 log "Done command:  $NOTIFY_COMMAND"
 log "New command:   ${NEW_TASK_COMMAND:-(not set)}"
-log "Open pattern:  $OPEN_PATTERN"
-log "Done pattern:  $DONE_PATTERN"
+log "Open marker:   $OPEN_MARKER"
+log "Done marker:   $DONE_MARKER"
 log "Interval:      ${POLL_INTERVAL}s"
 log "Open todos:    $OPEN_COUNT"
 echo "--------------------------------------------------"

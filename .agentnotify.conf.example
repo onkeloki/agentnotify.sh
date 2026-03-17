@@ -11,21 +11,21 @@
 POLL_INTERVAL=2
 
 # =============================================================================
-# Marker patterns (extended regex, matched with grep -E)
+# Markers (plain strings, matched with grep -F – no regex)
 # =============================================================================
 
-# Pattern that identifies an OPEN (pending) task (default: \[ \])
+# String that identifies an OPEN (pending) task line (default: [ ])
 # Examples:
-#   OPEN_PATTERN='\[ \]'      standard Markdown checkbox
-#   OPEN_PATTERN='\[>\]'      custom "in progress" marker
-OPEN_PATTERN='\[ \]'
+#   OPEN_MARKER='[ ]'    standard Markdown checkbox
+#   OPEN_MARKER='[>]'    custom "in progress" marker
+OPEN_MARKER='[ ]'
 
-# Pattern that identifies a DONE (completed) task (default: \[[xX]\])
+# String that identifies a DONE (completed) task line (default: [x])
 # Examples:
-#   DONE_PATTERN='\[[xX]\]'   matches [x] and [X]
-#   DONE_PATTERN='\[x\]'      lowercase only
-#   DONE_PATTERN='\[DONE\]'   custom marker
-DONE_PATTERN='\[[xX]\]'
+#   DONE_MARKER='[x]'    standard Markdown (lowercase)
+#   DONE_MARKER='[X]'    uppercase variant
+#   DONE_MARKER='[DONE]' custom marker
+DONE_MARKER='[x]'
 
 # =============================================================================
 # Commands
