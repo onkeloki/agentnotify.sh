@@ -147,6 +147,7 @@ PREV_OPEN="$WORK_DIR/prev_open"
 CURR_OPEN="$WORK_DIR/curr_open"
 CURR_DONE="$WORK_DIR/curr_done"
 NEWLY_DONE="$WORK_DIR/newly_done"
+NEWLY_ADDED="$WORK_DIR/newly_added"
 
 cleanup() {
     rm -rf "$WORK_DIR"
@@ -199,6 +200,10 @@ while true; do
     # comm -23 returns lines only in file 1 (PREV), both files must be sorted.
     comm -23 "$PREV_OPEN" "$CURR_OPEN" > "$NEWLY_DONE"
 
+    # Newly added = tasks that are now open but were not in the previous snapshot.
+    # comm -13 returns lines only in file 2 (CURR).
+    comm -13 "$PREV_OPEN" "$CURR_OPEN" > "$NEWLY_ADDED"
+
     # For each potentially completed task, verify it actually has [x]
     while IFS= read -r task; do
         [[ -z "$task" ]] && continue
@@ -211,6 +216,13 @@ while true; do
             echo ""
         fi
     done < "$NEWLY_DONE"
+
+    # Log newly added todos
+    while IFS= read -r task; do
+        [[ -z "$task" ]] && continue
+        log "+ New todo: $task"
+        echo ""
+    done < "$NEWLY_ADDED"
 
     # Update snapshot
     cp "$CURR_OPEN" "$PREV_OPEN"
