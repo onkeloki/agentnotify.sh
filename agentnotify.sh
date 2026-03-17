@@ -16,8 +16,8 @@
 # The open and done marker patterns are configurable via OPEN_PATTERN / DONE_PATTERN
 # in the config file (extended regex, matched with grep -E).
 # Defaults:
-#   OPEN_PATTERN='\[ \]'   matches: - [ ] Task
-#   DONE_PATTERN='\[xX\]'  matches: - [x] Task  or  - [X] Task
+#   OPEN_PATTERN='\[ \]'      matches: - [ ] Task
+#   DONE_PATTERN='\[[xX]\]'  matches: - [x] Task  or  - [X] Task
 # =============================================================================
 
 # --------------------------------------------------------------------------- #
@@ -97,7 +97,7 @@ NOTIFY_COMMAND="${NOTIFY_COMMAND:-echo \"[agentnotify] Done: {TODO}\"}"
 NEW_TASK_COMMAND="${NEW_TASK_COMMAND:-}"
 POLL_INTERVAL="${POLL_INTERVAL:-2}"
 OPEN_PATTERN="${OPEN_PATTERN:-\\[ \\]}"
-DONE_PATTERN="${DONE_PATTERN:-\\[xX\\]}"
+DONE_PATTERN="${DONE_PATTERN:-\\[[xX]\\]}"
 
 # --------------------------------------------------------------------------- #
 #  Task extraction (BSD grep & sed compatible, no grep -P required)           #

@@ -37,7 +37,7 @@ cp .agentnotify.conf.example /path/to/my/repo/.agentnotify.conf
 | `NEW_TASK_COMMAND` | *(empty)* | Command to run when a new task is added (optional) |
 | `POLL_INTERVAL` | `2` | Polling interval in seconds |
 | `OPEN_PATTERN` | `\[ \]` | Extended regex matching the **open** task marker |
-| `DONE_PATTERN` | `\[xX\]` | Extended regex matching the **done** task marker |
+| `DONE_PATTERN` | `\[[xX]\]` | Extended regex matching the **done** task marker |
 
 `{TODO}` is replaced at runtime with the task text in both `NOTIFY_COMMAND` and `NEW_TASK_COMMAND`.
 

@@ -20,12 +20,12 @@ POLL_INTERVAL=2
 #   OPEN_PATTERN='\[>\]'      custom "in progress" marker
 OPEN_PATTERN='\[ \]'
 
-# Pattern that identifies a DONE (completed) task (default: \[xX\])
+# Pattern that identifies a DONE (completed) task (default: \[[xX]\])
 # Examples:
-#   DONE_PATTERN='\[xX\]'     matches [x] and [X]
+#   DONE_PATTERN='\[[xX]\]'   matches [x] and [X]
 #   DONE_PATTERN='\[x\]'      lowercase only
 #   DONE_PATTERN='\[DONE\]'   custom marker
-DONE_PATTERN='\[xX\]'
+DONE_PATTERN='\[[xX]\]'
 
 # =============================================================================
 # Commands
